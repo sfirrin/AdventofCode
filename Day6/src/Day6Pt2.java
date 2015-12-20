@@ -6,7 +6,7 @@ import java.util.regex.*;
 public class Day6Pt2 {
 
     public static void main(String[] args) {
-        File input = new File("Day6Pt2\\src\\day6.txt");
+        File input = new File("Day6\\src\\day6.txt");
         try {
             Scanner directions = new Scanner(input);
             int[][] grid = new int[1000][1000];
@@ -18,7 +18,7 @@ public class Day6Pt2 {
 
             while (directions.hasNext()) {
                 String nextDirection = directions.nextLine();
-                String[] stringDimensions = getDimensions(nextDirection);
+                String[] stringDimensions = Day6.getDimensions(nextDirection);
                 int[] intDimensions = new int[4];
                 for (int i=0; i<4; i++) {
                     intDimensions[i] = Integer.parseInt(stringDimensions[i+1]);
@@ -46,16 +46,4 @@ public class Day6Pt2 {
             System.out.println("File not found");
         }
     }
-
-    public static String[] getDimensions(String line) {
-        Pattern directionPattern = Pattern.compile("(toggle|turn on|turn off)\\s(\\d+),(\\d+)\\sthrough\\s(\\d+),(\\d+)");
-        String[] coordinates = new String[5];
-        Matcher directionMatcher = directionPattern.matcher(line);
-        directionMatcher.find();
-        for (int i=0; i<5; i++) {
-            coordinates[i] = directionMatcher.group(i+1);
-        }
-        return coordinates;
-    }
-
 }
