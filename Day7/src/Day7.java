@@ -1,129 +1,82 @@
-import java.util.HashMap;
-import java.util.Scanner;
-import java.io.FileNotFoundException;
-import java.io.File;
-// This is definitely not my best work but it does get the job done
+    import java.io.File;
+    import java.io.FileNotFoundException;
+    import java.util.ArrayList;
+    import java.util.HashMap;
+    import java.util.Scanner;
 
+    public class Day7 {
+        static HashMap<String, Integer> wires;
+        static boolean part2 = true;
 
-public class Day7 {
-
-
-
-    public static void main(String[] args) {
-        File input = new File("Day7\\src\\day7.txt");
-
-
-        try {
-            Scanner instructions = new Scanner(input);
-            HashMap<String, Wire> wireList = new HashMap<String,Wire>();
-
-            do {
-                while (instructions.hasNext()) {
-                    String currentLine = instructions.nextLine();
-                    System.out.println(currentLine);
-                    String[] lineParts = currentLine.split(" ");
-                    for (String s : lineParts) {
-                        System.out.println(s);
-                    }
-
-
-                    if (lineParts.length == 3) {
-                        // Check for direct assignment of signal to wire
-                        try {
-                            Wire currentWire = new Wire(lineParts[2], Integer.parseInt(lineParts[0]));
-                            wireList.putIfAbsent(lineParts[2], currentWire);
-                        } catch (NumberFormatException e) {
-                            // Check for assignment of one wire's signal to another wire
-                            Wire firstWire = new Wire(lineParts[0]);
-                            wireList.putIfAbsent(lineParts[0], firstWire);
-
-                            Wire secondWire = new Wire(lineParts[2], firstWire.getSignal());
-                            wireList.putIfAbsent(lineParts[2], secondWire);
-
-                        }
-                    } else if (lineParts.length == 4) {
-                        // Check for NOT assignment
-                        wireList.putIfAbsent(lineParts[1], new Wire(lineParts[1]));
-                        wireList.putIfAbsent(lineParts[3], new Wire(lineParts[3]));
-                        if (wireList.get(lineParts[1]).getSignal() == -1) {
-                            wireList.get(lineParts[3]).setSignal(-1);
-                        } else {
-                            int notSignal = wireList.get(lineParts[1]).getSignal();
-                            wireList.get(lineParts[3]).setSignal(~notSignal);
-                        }
-                    } else if (lineParts.length == 5) {
-                        String op = lineParts[1];
-                        if (op.equals("AND")) {
-                            wireList.putIfAbsent(lineParts[0], new Wire(lineParts[0]));
-                            wireList.putIfAbsent(lineParts[2], new Wire(lineParts[2]));
-                            wireList.putIfAbsent(lineParts[4], new Wire(lineParts[4]));
-                            if (wireList.get(lineParts[0]).getSignal() == -1
-                                    || wireList.get(lineParts[2]).getSignal() == -1) {
-                                wireList.get(lineParts[4]).setSignal(-1);
-                            } else {
-                                int firstSignal = wireList.get(lineParts[0]).getSignal();
-                                int secondSignal = wireList.get(lineParts[2]).getSignal();
-                                wireList.get(lineParts[4]).setSignal((firstSignal & secondSignal));
-                            }
-                        } else if (op.equals("OR")) {
-                            // I know this is a lot of repeated code that should go in a method but I've come this far
-                            wireList.putIfAbsent(lineParts[0], new Wire(lineParts[0]));
-                            wireList.putIfAbsent(lineParts[2], new Wire(lineParts[2]));
-                            wireList.putIfAbsent(lineParts[4], new Wire(lineParts[4]));
-                            if (wireList.get(lineParts[0]).getSignal() == -1
-                                    || wireList.get(lineParts[2]).getSignal() == -1) {
-                                wireList.get(lineParts[4]).setSignal(-1);
-                            } else {
-                                int firstSignal = wireList.get(lineParts[0]).getSignal();
-                                int secondSignal = wireList.get(lineParts[2]).getSignal();
-                                wireList.get(lineParts[4]).setSignal((firstSignal | secondSignal));
-                            }
-                        } else if (op.equals("LSHIFT")) {
-                            int shiftAmount = Integer.parseInt(lineParts[2]);
-                            wireList.putIfAbsent(lineParts[0], new Wire(lineParts[0]));
-                            wireList.putIfAbsent(lineParts[4], new Wire(lineParts[4]));
-                            if (wireList.get(lineParts[0]).getSignal() == -1) {
-                                wireList.get(lineParts[4]).setSignal(-1);
-                            } else {
-                                int baseSignal = wireList.get(lineParts[0]).getSignal();
-                                wireList.get(lineParts[4]).setSignal((baseSignal << shiftAmount));
-                            }
-                        } else if (op.equals("RSHIFT")) {
-                            int shiftAmount = Integer.parseInt(lineParts[2]);
-                            wireList.putIfAbsent(lineParts[0], new Wire(lineParts[0]));
-                            wireList.putIfAbsent(lineParts[4], new Wire(lineParts[4]));
-                            if (wireList.get(lineParts[0]).getSignal() == -1) {
-                                wireList.get(lineParts[4]).setSignal(-1);
-                            } else {
-                                int baseSignal = wireList.get(lineParts[0]).getSignal();
-                                wireList.get(lineParts[4]).setSignal((baseSignal >>> shiftAmount));
-                            }
-                        }
-                    }
-
-                }
-            } while (!isComplete(wireList));
-
-            System.out.println(wireList.get("a").getSignal());
-
-
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found");
-        }
-    }
-
-    public static boolean isComplete(HashMap<String,Wire> wireMap) {
-        boolean complete = true;
-        for (String key : wireMap.keySet()) {
-            System.out.println(key);
-            System.out.println(wireMap.get(key).getSignal());
-            if (wireMap.get(key).getSignal() == -1) {
-                complete = false;
-                break;
+        public static void main(String[] args) throws FileNotFoundException {
+            ArrayList<String[]> instList = new ArrayList<String[]>();
+            File input = new File("Day7\\src\\day7.txt");
+            Scanner fileIn = new Scanner(input);
+            while (fileIn.hasNextLine()) {
+                String currentLine = fileIn.nextLine();
+                String[] lineParts = currentLine.split(" ");
+                instList.add(lineParts);
             }
+
+            wires = new HashMap<String, Integer>();
+            if (part2) wires.put("b", 3176);
+
+            while (!wires.containsKey("a")) {
+                for (int i=0; i<instList.size(); i++) {
+                    String[] currentInst = instList.get(i);
+                    if (currentInst.length == 3) {
+                        // Direct assignment of a signal or wire's signal to another wire
+                        if (!wires.containsKey(currentInst[2])) {
+                            if (currentInst[0].matches("\\d+")) {
+                                wires.put(currentInst[2], Integer.parseInt(currentInst[0]));
+                            } else {
+                                if (wires.containsKey(currentInst[0])) {
+                                    wires.put(currentInst[2], wires.get(currentInst[0]));
+                                }
+                            }
+                        }
+
+                    } else if (currentInst.length == 4) {
+                        // NOT assignment
+                        if (!wires.containsKey(currentInst[3])) {
+                            if (currentInst[1].matches("\\d+")) {
+                                wires.put(currentInst[3], (~Integer.parseInt(currentInst[1]) & 0xffff));
+                            } else if (wires.containsKey(currentInst[1])) {
+                                int notSignal = wires.get(currentInst[1]);
+                                wires.put(currentInst[3], (~notSignal & 0xffff));
+                            }
+                        }
+
+                    } else if (currentInst.length == 5) {
+                        String first = currentInst[0];
+                        String second = currentInst[2];
+                        String last = currentInst[4];
+                        String op = currentInst[1];
+                        Integer firstInt = null;
+                        if (first.matches("\\d+")) {
+                            firstInt = Integer.parseInt(first);
+                        } else if (wires.containsKey(first)) {
+                            firstInt = wires.get(first);
+                        }
+
+                        if (!wires.containsKey(last) && firstInt != null) {
+                            if (op.equals("LSHIFT")) {
+                                wires.put(last, firstInt << Integer.parseInt(second));
+                            } else if (op.equals("RSHIFT")) {
+                                wires.put(last, firstInt >>> Integer.parseInt(second));
+                            } else if (wires.containsKey(second)) {
+                                if (op.equals("AND")) {
+                                    wires.put(last, firstInt & wires.get(second));
+                                } else if (op.equals("OR")) {
+                                    wires.put(last, firstInt | wires.get(second));
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            System.out.println("The value of a is: " + wires.get("a"));
         }
-
-
-        return complete;
     }
-}
